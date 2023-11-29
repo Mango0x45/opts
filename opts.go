@@ -12,7 +12,10 @@
 // user-facing I/O is delegrated to the caller.
 package opts
 
-import "slices"
+import (
+	"slices"
+	"strings"
+)
 
 // ArgMode represents the whether or not a long-option takes an argument.
 type ArgMode int
@@ -83,7 +86,7 @@ func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
 		for j, r := range rs {
 			k := slices.Index(optrs, r)
 			if k == -1 {
-				return nil, 0, BadOptionError(r)
+				return nil, 0, BadOptionError{r: r}
 			}
 
 			var s string
@@ -93,7 +96,7 @@ func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
 			case am == Required:
 				i++
 				if i >= len(args) {
-					return nil, 0, NoArgumentError(r)
+					return nil, 0, NoArgumentError{r: r}
 				}
 				s = args[i]
 			default:
@@ -107,6 +110,102 @@ func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
 	}
 
 	return flags, i, nil
+}
+
+func GetLong(args []string, opts []LongOpt) (flags []Flag, optind int, err error) {
+	if len(args) == 0 {
+		return
+	}
+
+	var i int
+	for i = 1; i < len(args); i++ {
+		arg := args[i]
+		if len(arg) == 0 || arg == "-" || arg[0] != '-' {
+			break
+		} else if arg == "--" {
+			i++
+			break
+		}
+
+		if strings.HasPrefix(arg, "--") {
+			arg = arg[2:]
+
+			n := arg
+			j := strings.IndexByte(n, '=')
+			if j != -1 {
+				n = arg[:j]
+			}
+
+			var s string
+			o, ok := optStruct(opts, n)
+
+			switch {
+			case !ok:
+				return nil, 0, BadOptionError{s: n}
+			case o.Arg != None && j != -1:
+				s = arg[j+1:]
+			case o.Arg == Required:
+				i++
+				if i >= len(args) {
+					return nil, 0, NoArgumentError{s: n}
+				}
+				s = args[i]
+			}
+
+			flags = append(flags, Flag{Key: o.Short, Value: s})
+		} else {
+			rs := []rune(arg[1:])
+			for j, r := range rs {
+				var s string
+
+				switch am, ok := getModeRune(opts, r); {
+				case !ok:
+					return nil, 0, BadOptionError{r: r}
+				case am != None && j < len(rs)-1:
+					s = string(rs[j+1:])
+				case am == Required:
+					i++
+					if i >= len(args) {
+						return nil, 0, NoArgumentError{r: r}
+					}
+					s = args[i]
+				default:
+					flags = append(flags, Flag{Key: r})
+					continue
+				}
+
+				flags = append(flags, Flag{r, s})
+				break
+			}
+		}
+	}
+
+	return flags, i, nil
+}
+
+func getModeRune(os []LongOpt, r rune) (ArgMode, bool) {
+	for _, o := range os {
+		if o.Short == r {
+			return o.Arg, true
+		}
+	}
+	return 0, false
+}
+
+func optStruct(os []LongOpt, s string) (LongOpt, bool) {
+	i := -1
+	for j, o := range os {
+		if strings.HasPrefix(o.Long, s) {
+			if i != -1 {
+				return LongOpt{}, false
+			}
+			i = j
+		}
+	}
+	if i == -1 {
+		return LongOpt{}, false
+	}
+	return os[i], true
 }
 
 func colonsToArgMode(rs []rune) ArgMode {
