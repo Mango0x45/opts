@@ -35,7 +35,7 @@ func TestNoFlag(t *testing.T) {
 
 func TestCNoArg(t *testing.T) {
 	args := []string{"foo", "-c"}
-	assertGet(t, args, 0, 0, ErrNoArgument('c'))
+	assertGet(t, args, 0, 0, NoArgumentError('c'))
 }
 
 func TestCWithArg(t *testing.T) {
@@ -200,12 +200,12 @@ func TestΛAsArgToC(t *testing.T) {
 
 func TestInvalidFlag(t *testing.T) {
 	args := []string{"foo", "-X"}
-	assertGet(t, args, 0, 0, ErrBadOption('X'))
+	assertGet(t, args, 0, 0, BadOptionError('X'))
 }
 
 func TestInvalidFlagWithArg(t *testing.T) {
 	args := []string{"foo", "-X", "bar"}
-	assertGet(t, args, 0, 0, ErrBadOption('X'))
+	assertGet(t, args, 0, 0, BadOptionError('X'))
 }
 
 func TestAAfterArg(t *testing.T) {
