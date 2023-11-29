@@ -12,6 +12,8 @@
 // user-facing I/O is delegrated to the caller.
 package opts
 
+import "slices"
+
 // ArgMode represents the whether or not a long-option takes an argument.
 type ArgMode int
 
@@ -62,44 +64,30 @@ type LongOpt struct {
 // of the first non-option argument in optind.  In the case of failure,
 // err will be one of [BadOptionError] or [NoArgumentError].
 func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
-	argmap := make(map[rune]ArgMode)
-
-	rs := []rune(optstr)
-	if rs[0] == ':' {
-		rs = rs[1:]
-	}
-	for len(rs) > 0 {
-		switch r := rs[0]; {
-		case len(rs) > 2 && rs[1] == ':' && rs[2] == ':':
-			argmap[r] = Optional
-			rs = rs[3:]
-		case len(rs) > 1 && rs[1] == ':':
-			argmap[r] = Required
-			rs = rs[2:]
-		default:
-			argmap[r] = None
-			rs = rs[1:]
-		}
+	if len(args) == 0 {
+		return
 	}
 
-	for i := 1; i < len(args); i++ {
+	optrs := []rune(optstr)
+	var i int
+	for i = 1; i < len(args); i++ {
 		arg := args[i]
 		if len(arg) == 0 || arg == "-" || arg[0] != '-' {
-			optind = i
-			return
+			break
 		} else if arg == "--" {
-			optind = i + 1
-			return
+			i++
+			break
 		}
 
 		rs := []rune(arg[1:])
 		for j, r := range rs {
-			var s string
-			am, ok := argmap[r]
-
-			switch {
-			case !ok:
+			k := slices.Index(optrs, r)
+			if k == -1 {
 				return nil, 0, BadOptionError(r)
+			}
+
+			var s string
+			switch am := colonsToArgMode(optrs[k+1:]); {
 			case am != None && j < len(rs)-1:
 				s = string(rs[j+1:])
 			case am == Required:
@@ -118,6 +106,15 @@ func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
 		}
 	}
 
-	optind = len(args)
-	return
+	return flags, i, nil
+}
+
+func colonsToArgMode(rs []rune) ArgMode {
+	if len(rs) >= 2 && rs[0] == ':' && rs[1] == ':' {
+		return Optional
+	}
+	if len(rs) >= 1 && rs[0] == ':' {
+		return Required
+	}
+	return None
 }
