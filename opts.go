@@ -62,14 +62,23 @@ type LongOpt struct {
 // of the first non-option argument in optind.  In the case of failure,
 // err will be one of [BadOptionError] or [NoArgumentError].
 func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
-	argmap := make(map[rune]bool)
+	argmap := make(map[rune]ArgMode)
 
 	rs := []rune(optstr)
-	for i, r := range rs {
-		if r != ':' {
-			argmap[r] = false
-		} else if i > 0 {
-			argmap[rs[i-1]] = true
+	if rs[0] == ':' {
+		rs = rs[1:]
+	}
+	for len(rs) > 0 {
+		switch r := rs[0]; {
+		case len(rs) > 2 && rs[1] == ':' && rs[2] == ':':
+			argmap[r] = Optional
+			rs = rs[3:]
+		case len(rs) > 1 && rs[1] == ':':
+			argmap[r] = Required
+			rs = rs[2:]
+		default:
+			argmap[r] = None
+			rs = rs[1:]
 		}
 	}
 
@@ -86,14 +95,14 @@ func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
 		rs := []rune(arg[1:])
 		for j, r := range rs {
 			var s string
-			argp, ok := argmap[r]
+			am, ok := argmap[r]
 
 			switch {
 			case !ok:
 				return nil, 0, BadOptionError(r)
-			case argp && j < len(rs)-1:
+			case am != None && j < len(rs)-1:
 				s = string(rs[j+1:])
-			case argp:
+			case am == Required:
 				i++
 				if i >= len(args) {
 					return nil, 0, NoArgumentError(r)

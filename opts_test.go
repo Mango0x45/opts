@@ -10,7 +10,7 @@ func die(t *testing.T, name string, want, got any) {
 }
 
 func assertGet(t *testing.T, args []string, fw, ow int, ew error) []Flag {
-	flags, optind, err := Get(args, "abλc:dß")
+	flags, optind, err := Get(args, "abλc:dßĦ::")
 	if err != ew {
 		die(t, "err", ew, err)
 	}
@@ -216,4 +216,43 @@ func TestAAfterArg(t *testing.T) {
 func TestXAfterDash(t *testing.T) {
 	args := []string{"foo", "-", "-x"}
 	assertGet(t, args, 0, 1, nil)
+}
+
+func TestĦWithSpaceAndArg(t *testing.T) {
+	args := []string{"foo", "-Ħ", "bar"}
+	flags := assertGet(t, args, 1, 2, nil)
+	if flags[0].Key != 'Ħ' {
+		die(t, "flags[0].Key", 'Ħ', flags[0].Key)
+	}
+	if flags[0].Value != "" {
+		die(t, "flags[0].Value", "", flags[0].Value)
+	}
+}
+
+func TestĦWithArg(t *testing.T) {
+	args := []string{"foo", "-Ħbar"}
+	flags := assertGet(t, args, 1, 2, nil)
+	if flags[0].Key != 'Ħ' {
+		die(t, "flags[0].Key", 'Ħ', flags[0].Key)
+	}
+	if flags[0].Value != "bar" {
+		die(t, "flags[0].Value", "bar", flags[0].Value)
+	}
+}
+
+func TestΛĦWithArg(t *testing.T) {
+	args := []string{"foo", "-λĦbar"}
+	flags := assertGet(t, args, 2, 2, nil)
+	if flags[0].Key != 'λ' {
+		die(t, "flags[0].Key", 'λ', flags[0].Key)
+	}
+	if flags[0].Value != "" {
+		die(t, "flags[0].Value", "", flags[0].Value)
+	}
+	if flags[1].Key != 'Ħ' {
+		die(t, "flags[1].Key", 'Ħ', flags[1].Key)
+	}
+	if flags[1].Value != "bar" {
+		die(t, "flags[1].Value", "bar", flags[1].Value)
+	}
 }
