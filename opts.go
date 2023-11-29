@@ -42,27 +42,28 @@ func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
 		}
 
 		rs := []rune(arg[1:])
-	outer:
 		for j, r := range rs {
+			var s string
 			argp, ok := argmap[r]
-			if !ok {
-				return nil, 0, ErrBadOption(r)
-			}
 
 			switch {
+			case !ok:
+				return nil, 0, ErrBadOption(r)
 			case argp && j < len(rs)-1:
-				s := string(rs[j+1:])
-				flags = append(flags, Flag{r, s})
-				break outer
+				s = string(rs[j+1:])
 			case argp:
 				i++
 				if i >= len(args) {
 					return nil, 0, ErrNoArgument(r)
 				}
-				flags = append(flags, Flag{r, args[i]})
-				break outer
+				s = args[i]
+			default:
+				flags = append(flags, Flag{Key: r})
+				continue
 			}
-			flags = append(flags, Flag{Key: r})
+
+			flags = append(flags, Flag{r, s})
+			break
 		}
 	}
 
