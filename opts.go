@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-// ArgMode represents the whether or not a long-option takes an argument.
+// ArgMode represents whether or not a long-option takes an argument.
 type ArgMode int
 
 // These tokens can be used to specify whether or not a long-option takes
