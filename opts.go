@@ -112,6 +112,21 @@ func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
 	return flags, i, nil
 }
 
+// GetLong parses the command-line arguments in args according to opts.
+//
+// This function is identical to [Get] except it parses according to a
+// [LongOpt] slice instead of an opt-string, and it parses long-options.
+// When parsing, GetLong will also accept incomplete long-options if they
+// are ambiguous.  For example, given the following definition of opts:
+//
+//   opts := []LongOpt{
+//   	{Short: 'a', Long: "add", Arg: None},
+//   	{Short: 'd', Long: "delete", Arg: None},
+//   	{Short: 'D', Long: "defer", Arg: None},
+//   }
+//
+// The options ‘--a’ and ‘--ad’ will parse as ‘--add’.  The option ‘--de’
+// will not parse however as it is ambiguous.
 func GetLong(args []string, opts []LongOpt) (flags []Flag, optind int, err error) {
 	if len(args) == 0 {
 		return
