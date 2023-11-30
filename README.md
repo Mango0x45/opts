@@ -36,10 +36,10 @@ func main() {
 		usage()
 	}
 
-	for _, opt := range opts {
-		switch opt.Key {
+	for _, f := range flags {
+		switch f.Key {
 		case 'a':
-			fmt.Println("-a given with argument", opt.Value)
+			fmt.Println("-a given with argument", f.Value)
 		case 'ß':
 			fmt.Println("-ß given")
 		case 'λ':
@@ -74,20 +74,20 @@ func usage() {
 
 func main() {
 	flags, optind, err := opts.GetLong(os.Args, []opts.LongOpt{
-		{Short: 'a', Long: "add", Arg: Required},
-		{Short: 'ß', Long: "sheiße", Arg: None},
-		{Short: 'λ', Long: "λεωνίδας", Arg: None},
-		{Short: noShortFlag, Long: "no-short", Arg: None},
+		{Short: 'a', Long: "add", Arg: opts.Required},
+		{Short: 'ß', Long: "sheiße", Arg: opts.None},
+		{Short: 'λ', Long: "λεωνίδας", Arg: opts.None},
+		{Short: noShortFlag, Long: "no-short", Arg: opts.None},
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], err)
 		usage()
 	}
 
-	for _, opt := range opts {
-		switch opt.Key {
+	for _, f := range flags {
+		switch f.Key {
 		case 'a':
-			fmt.Println("-a or --add given with argument", opt.Value)
+			fmt.Println("-a or --add given with argument", f.Value)
 		case 'ß':
 			fmt.Println("-ß or --sheiße given")
 		case 'λ':
