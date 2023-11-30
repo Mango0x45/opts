@@ -40,8 +40,8 @@ type Flag struct {
 
 // LongOpt represents a long-option to attempt to parse.  All long
 // options have a short-hand form represented by Short and a long-form
-// represented by Long.  Arg is used to represent whether or not a takes
-// an argument.
+// represented by Long.  Arg is used to represent whether or not the
+// long-option takes an argument.
 //
 // In the case that you want to parse a long-option which doesn’t have a
 // short-hand form, you can set Short to a negative integer.
