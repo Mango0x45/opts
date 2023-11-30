@@ -117,7 +117,7 @@ func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
 // This function is identical to [Get] except it parses according to a
 // [LongOpt] slice instead of an opt-string, and it parses long-options.
 // When parsing, GetLong will also accept incomplete long-options if they
-// are ambiguous.  For example, given the following definition of opts:
+// are unambiguous.  For example, given the following definition of opts:
 //
 //	opts := []LongOpt{
 //		{Short: 'a', Long: "add", Arg: None},
