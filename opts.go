@@ -119,11 +119,11 @@ func Get(args []string, optstr string) (flags []Flag, optind int, err error) {
 // When parsing, GetLong will also accept incomplete long-options if they
 // are ambiguous.  For example, given the following definition of opts:
 //
-//   opts := []LongOpt{
-//   	{Short: 'a', Long: "add", Arg: None},
-//   	{Short: 'd', Long: "delete", Arg: None},
-//   	{Short: 'D', Long: "defer", Arg: None},
-//   }
+//	opts := []LongOpt{
+//		{Short: 'a', Long: "add", Arg: None},
+//		{Short: 'd', Long: "delete", Arg: None},
+//		{Short: 'D', Long: "defer", Arg: None},
+//	}
 //
 // The options ‘--a’ and ‘--ad’ will parse as ‘--add’.  The option ‘--de’
 // will not parse however as it is ambiguous.
