@@ -1,3 +1,12 @@
+## Update 6th December, 2023
+
+The v2 of this library has been released, and you should probably use
+that instead:
+
+```sh
+$ go get -u git.sr.ht/~mango/opts/v2
+```
+
 # Opts
 
 Opts is a simple Go library implementing unicode-aware getopt(3)- and
@@ -21,7 +30,7 @@ import (
 	"fmt"
 	"os"
 
-	"git.sr.ht/~mango/opts"
+	"git.sr.ht/~mango/opts/v2"
 )
 
 func usage() {
@@ -30,7 +39,7 @@ func usage() {
 }
 
 func main() {
-	flags, optind, err := opts.Get(os.Args, "a:ßλ")
+	flags, rest, err := opts.Get(os.Args, "a:ßλ")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], err)
 		usage()
@@ -47,8 +56,7 @@ func main() {
 		}
 	}
 
-	// The remaining arguments
-	rest := os.Args[optind:]
+	fmt.Println("The remaining arguments are:", rest)
 }
 ```
 
@@ -65,19 +73,18 @@ import (
 	"git.sr.ht/~mango/opts"
 )
 
-const noShortFlag = -1
-
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage: %s [-ßλ] [-a arg] [--no-short]\n", os.Args[0])
 	os.Exit(1)
 }
 
 func main() {
-	flags, optind, err := opts.GetLong(os.Args, []opts.LongOpt{
+	// The fourth long-option has no short-option equivalent
+	flags, rest, err := opts.GetLong(os.Args, []opts.LongOpt{
 		{Short: 'a', Long: "add", Arg: opts.Required},
 		{Short: 'ß', Long: "sheiße", Arg: opts.None},
 		{Short: 'λ', Long: "λεωνίδας", Arg: opts.None},
-		{Short: noShortFlag, Long: "no-short", Arg: opts.None},
+		{Short: -1, Long: "no-short", Arg: opts.None},
 	})
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], err)
@@ -92,12 +99,12 @@ func main() {
 			fmt.Println("-ß or --sheiße given")
 		case 'λ':
 			fmt.Println("-λ or --λεωνίδας given")
-		case noShortFlag:
+		case -1:
 			fmt.Println("--no-short given")
 		}
 	}
 
 	// The remaining arguments
-	rest := os.Args[optind:]
+	fmt.Println("The remaining arguments are:", rest)
 }
 ```
